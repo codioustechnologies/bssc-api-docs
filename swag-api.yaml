@@ -1,0 +1,282 @@
+openapi: 3.0.3
+info:
+  title: BSSC REST API
+  version: 1.0.0
+  description: Best Skin Specialist Chandigarh – Secure Appointment Booking API
+
+servers:
+  - url: https://bestskinspecialistchandigarh.com/wp-json/bsscapi/v1
+
+paths:
+
+  /doctors:
+    get:
+      summary: List all doctors
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: per_page
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A list of doctors
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  doctors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        email:
+                          type: string
+                        phone:
+                          type: string
+                        specialization:
+                          type: string
+                        location:
+                          type: string
+                        department:
+                          type: array
+                          items:
+                            type: string
+                        description:
+                          type: string
+                        profile_image:
+                          type: string
+                        profile_url:
+                          type: string
+                  total:
+                    type: integer
+                  per_page:
+                    type: integer
+                  current_page:
+                    type: integer
+                  total_pages:
+                    type: integer
+
+  /doctors/{id}:
+    get:
+      summary: Get doctor by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Doctor details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  email:
+                    type: string
+                  specialization:
+                    type: string
+                  department:
+                    type: array
+                    items:
+                      type: string
+                  description:
+                    type: string
+                  profile_image:
+                    type: string
+                  profile_url:
+                    type: string
+
+  /availability:
+    get:
+      summary: Get doctor availability
+      parameters:
+        - in: query
+          name: doctor_id
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: date
+          required: true
+          schema:
+            type: string
+            example: 2025-07-25
+      responses:
+        '200':
+          description: Available slots
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  doctor_id:
+                    type: integer
+                  date:
+                    type: string
+                  available_slots:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        start_time:
+                          type: string
+                        available_tokens:
+                          type: integer
+                        total_tokens:
+                          type: integer
+
+  /book:
+    post:
+      summary: Book an appointment
+      security:
+        - wpNonce: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - doctor_id
+                - customer_name
+                - customer_phone
+                - booking_time
+                - date
+              properties:
+                doctor_id:
+                  type: integer
+                customer_name:
+                  type: string
+                customer_phone:
+                  type: string
+                customer_email:
+                  type: string
+                problem:
+                  type: string
+                booking_time:
+                  type: string
+                  example: "14:00"
+                date:
+                  type: string
+                  example: "25-07-2025"
+      responses:
+        '200':
+          description: Booking successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+
+  /bookings/{id}:
+    get:
+      summary: Get booking by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Booking data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  booking_id:
+                    type: integer
+                  doctor_id:
+                    type: integer
+                  doctor_name:
+                    type: string
+                  patient_name:
+                    type: string
+                  patient_phone:
+                    type: string
+                  patient_email:
+                    type: string
+                  purpose:
+                    type: string
+                  booking_date:
+                    type: string
+                  booking_time:
+                    type: string
+                  created_at:
+                    type: string
+
+  /bookings/cancel:
+    post:
+      summary: Cancel a booking
+      security:
+        - wpNonce: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - booking_id
+              properties:
+                booking_id:
+                  type: integer
+                patient_email:
+                  type: string
+                patient_phone:
+                  type: string
+      responses:
+        '200':
+          description: Booking cancelled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /specializations:
+    get:
+      summary: Get list of all specializations
+      responses:
+        '200':
+          description: List of departments/specializations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+
+components:
+  securitySchemes:
+    wpNonce:
+      type: apiKey
+      in: header
+      name: X-WP-Nonce
